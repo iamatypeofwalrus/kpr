@@ -16,7 +16,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "kpr"
 	app.Usage = "Kinesis Put Records\n\n   A simple CLI that takes input from STDIN and sends it to an AWS Kinesis stream"
-	app.UsageText = "cat your_records.json | kpr --stream YOUR_STREAM --region us-west-2"
+	app.UsageText = "cat your_records.json | kpr --stream YOUR_STREAM_NAME --region us-west-2"
 	app.Version = "0.1.0"
 	app.HideHelp = true
 	app.HideVersion = true
@@ -28,7 +28,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "region, r",
-			Usage: "AWS `REGION`",
+			Usage: "Amazon Web Service `REGION`",
 			Value: "us-east-1",
 		},
 		cli.BoolFlag{
