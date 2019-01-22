@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -15,6 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/urfave/cli"
 )
+
+const newLine = "\n"
 
 func main() {
 	app := cli.NewApp()
@@ -38,7 +41,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "delimiter, d",
 			Usage: "Kinesis Firehose `DELIMITER`",
-			Value: "\n",
+			Value: newLine,
 		},
 		cli.BoolFlag{
 			Name:  "help, h",
@@ -135,10 +138,18 @@ func streamToFirehose(streamName string, input io.Reader, delimiter string, svc 
 
 	var count uint
 	for scanner.Scan() {
+		str := strings.TrimSpace(scanner.Text())
+
+		// if the line only consisted of whitespace (like the end of a file in *nix)
+		// then ignore it
+		if len(str) == 0 {
+			continue
+		}
+
 		req := &firehose.PutRecordInput{
 			DeliveryStreamName: aws.String(streamName),
 			Record: &firehose.Record{
-				Data: []byte(scanner.Text() + delimiter),
+				Data: []byte(str + delimiter),
 			},
 		}
 
