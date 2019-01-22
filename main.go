@@ -19,7 +19,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "kpr"
-	app.Usage = "Kinesis Put Records\n\n   A simple CLI that takes input from STDIN and sends it to an AWS Kinesis stream"
+	app.Usage = "Kinesis Put Records\n\n   A simple CLI that takes input from STDIN and sends it to an AWS Kinesis or Firehose stream"
 	app.UsageText = "cat your_records.json | kpr --stream YOUR_STREAM_NAME --region us-west-2"
 	app.Version = "0.1.0"
 	app.HideHelp = true
