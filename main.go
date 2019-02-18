@@ -36,6 +36,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "region, r",
 			Usage: "Amazon Web Service `REGION`",
+			// TODO: try to get region from credentials if possible
 			Value: "us-east-1",
 		},
 		cli.StringFlag{
@@ -55,17 +56,12 @@ func main() {
 
 	app.Action = do
 
-	err := app.Run(os.Args)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	app.Run(os.Args)
 }
 
-func do(c *cli.Context) error {
+func do(c *cli.Context) {
 	if c.Bool("help") {
-		cli.ShowAppHelp(c)
-		return nil
+		cli.ShowAppHelpAndExit(c, 1)
 	}
 
 	if !c.Bool("verbose") {
@@ -76,7 +72,8 @@ func do(c *cli.Context) error {
 
 	streamName := c.String("stream")
 	if streamName == "" {
-		return fmt.Errorf("--stream, -s flag is required")
+		fmt.Fprintf(os.Stderr, "--stream, -s flag is required\n\n")
+		cli.ShowAppHelpAndExit(c, 1)
 	}
 
 	region := c.String("region")
@@ -93,14 +90,24 @@ func do(c *cli.Context) error {
 	streamExists, isFirehose := checkStream(streamName, kinesisClient, firehoseClient)
 
 	if !streamExists {
-		return fmt.Errorf("stream %v doesn't exists in kinesis streams or firehose", streamName)
+		fmt.Fprintf(os.Stderr, "could not find stream with name in either streams or firehose: %s\n", streamName)
+		os.Exit(1)
+		return
 	}
 
+	var streamErr error
 	if isFirehose {
-		return streamToFirehose(streamName, os.Stdin, delimiter, firehoseClient)
+		streamErr = streamToFirehose(streamName, os.Stdin, delimiter, firehoseClient)
+	} else {
+		streamErr = streamToKinesis(streamName, os.Stdin, kinesisClient)
 	}
 
-	return streamToKinesis(streamName, os.Stdin, kinesisClient)
+	if streamErr != nil {
+		fmt.Fprintf(os.Stderr, "encountered an error while streaming: %s\n", streamErr)
+		os.Exit(1)
+	}
+
+	return
 }
 
 func checkStream(streamName string, kinesisClient *kinesis.Kinesis, firehoseClient *firehose.Firehose) (exists, useFirehose bool) {
