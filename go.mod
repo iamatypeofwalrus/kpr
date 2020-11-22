@@ -1,5 +1,7 @@
 module github.com/iamatypeofwalrus/kpr
 
+go 1.15
+
 require (
 	github.com/aws/aws-sdk-go v1.16.23
 	github.com/stretchr/testify v1.3.0 // indirect

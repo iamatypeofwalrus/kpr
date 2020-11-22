@@ -7,7 +7,6 @@ go get -u github.com/iamatypeofwalrus/kpr
 ```
 ## Usage
 ```
-$ kpr -h
 NAME:
    kpr - Kinesis Put Records
 
@@ -20,6 +19,7 @@ GLOBAL OPTIONS:
    --stream NAME, -s NAME               Kinesis stream NAME
    --region REGION, -r REGION           Amazon Web Service REGION (default: "us-east-1")
    --delimiter DELIMITER, -d DELIMITER  Kinesis Firehose DELIMITER (default: "\n")
+   --profile value, -p value            AWS Profile to use when creating clients
    --help, -h                           show this help message
    --verbose                            log verbosely
 ```

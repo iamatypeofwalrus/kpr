@@ -44,6 +44,10 @@ func main() {
 			Usage: "Kinesis Firehose `DELIMITER`",
 			Value: newLine,
 		},
+		cli.StringFlag{
+			Name:  "profile, p",
+			Usage: "AWS Profile to use when creating clients",
+		},
 		cli.BoolFlag{
 			Name:  "help, h",
 			Usage: "show this help message",
@@ -77,12 +81,25 @@ func do(c *cli.Context) {
 	}
 
 	region := c.String("region")
+	profile := c.String("profile")
+	if profile != "" {
+		log.Println("aws profile set to", profile)
+	}
 
 	sess := session.Must(
-		session.NewSession(
-			&aws.Config{Region: aws.String(region)},
+		session.NewSessionWithOptions(
+			session.Options{
+				Config:  aws.Config{Region: aws.String(region)},
+				Profile: profile,
+			},
 		),
 	)
+
+	err := validateCredentials(sess)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "no valid credentials found\n")
+		os.Exit(1)
+	}
 
 	kinesisClient := kinesis.New(sess)
 	firehoseClient := firehose.New(sess)
@@ -212,4 +229,10 @@ func streamToKinesis(streamName string, input io.Reader, svc *kinesis.Kinesis) e
 	}
 
 	return nil
+}
+
+func validateCredentials(sess *session.Session) error {
+	creds := sess.Config.Credentials
+	_, err := creds.Get()
+	return err
 }
